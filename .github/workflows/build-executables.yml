@@ -2,7 +2,7 @@ name: Build Executables
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, single-executable ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
