@@ -28,10 +28,10 @@ class Player:
     player_id: str
     name: str  # full name
     dob: str  # MM/DD/YYYY
-    age: float  # computed from DOB, 1 decimal precision, half-up rounding
     experience: int
     uniform_size: str
     evaluation_score: str  # raw format, possibly numeric
+    age: Optional[float] = None  # computed from DOB, 1 decimal precision, half-up rounding
     skill_score: Optional[float] = None
     sponsor_id: Optional[str] = None
 
