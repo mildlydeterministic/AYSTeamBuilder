@@ -22,7 +22,7 @@ jobs:
           pip install pyinstaller
       - name: Build executable
         run: |
-          pyinstaller teambuilder.spec
+          pyinstaller -y teambuilder.spec
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -46,7 +46,7 @@ jobs:
 
       - name: Build native ARM executable
         run: |
-          pyinstaller teambuilder.spec
+          pyinstaller -y teambuilder.spec
 
       - name: Upload ARM64 artifact
         uses: actions/upload-artifact@v4
@@ -62,7 +62,7 @@ jobs:
 
       - name: Build x86_64 (Intel) executable
         run: |
-          arch -x86_64 pyinstaller teambuilder.spec
+          arch -x86_64 pyinstaller -y teambuilder.spec
 
       - name: Upload x86_64 artifact
         uses: actions/upload-artifact@v4
