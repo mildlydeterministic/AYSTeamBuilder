@@ -6,4 +6,21 @@ Includes a summary of team compositions and prints standard deviation of total s
 
 See /docs/spec.md for full specification.
 """
-# ...existing code...
+import csv
+from typing import List
+from .models import Team, Player
+
+def export_team_assignments(teams: List[Team], filename: str = "team_assignments.csv"):
+    """Export team assignments to CSV. Each row is a player or coach assigned to a team."""
+    # ...stub...
+    pass
+
+def export_team_summary(teams: List[Team], filename: str = "team_summary.csv"):
+    """Export team summary (one row per team) to CSV."""
+    # ...stub...
+    pass
+
+def export_debug_players_csv(teams: List[Team], filename: str = "debug_players.csv"):
+    """Export all players with their calculated skill score and team name for debugging."""
+    # ...stub...
+    pass

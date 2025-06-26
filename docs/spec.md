@@ -70,6 +70,32 @@ Create a portable, reproducible Python-based tool to assign balanced youth socce
 
 ---
 
+## 🧮 Skill Scoring Algorithm
+
+Each player receives a normalized, weighted skill score based on the following features:
+
+1. **Age** (from DOB, in years to one decimal place)
+2. **Years of Experience** (integer)
+3. **Uniform Size** (ordinal mapping from Youth XXS to Adult XXL)
+4. **Coach Evaluation** (format currently unknown, handled as-is)
+
+### Normalization
+
+- Dynamic min/max normalization is performed  for each factor.
+- Missing values are either omitted from weighted scoring or imputed with average value if necessary.
+- Uniform size is converted to a numeric scale based on size order: XXS < XS < S < M < L < XL < etc.
+
+### Weighting (tentative example)
+
+- Age: 25%
+- Experience: 35%
+- Uniform Size: 15%
+- Coach Evaluation: 25%
+
+Weights are tunable and intended to reflect influence on play. Final score is a float in the range [0, 1].
+
+---
+
 ## 🧩 Data Models
 
 ### `Player`
