@@ -7,7 +7,7 @@ See /docs/spec.md for full specification.
 """
 import csv
 from typing import List, Tuple, Dict, Optional
-from .models import Player, Coach
+from teambuilder.models import Player, Coach
 import datetime
 from decimal import Decimal
 

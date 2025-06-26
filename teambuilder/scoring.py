@@ -12,7 +12,7 @@ UNIFORM_SIZE_WEIGHT = 0.15
 EVALUATION_WEIGHT = 0.25
 
 from typing import List, Optional, Dict
-from .models import Player, UNIFORM_SIZES
+from teambuilder.models import Player, UNIFORM_SIZES
 
 
 def build_normalization_context(players: List[Player]) -> Dict:

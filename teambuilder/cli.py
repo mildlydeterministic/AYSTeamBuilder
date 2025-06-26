@@ -4,10 +4,10 @@ Parses command-line arguments and launches team building process.
 See /docs/spec.md for full specification.
 """
 import argparse
-from .load_data import parse_players_csv, parse_coaches_csv
-from .scoring import build_normalization_context, calculate_player_skill_score
-from .team_builder import seed_teams_with_coaches, assign_players_to_teams
-from .output import export_team_assignments, export_team_summary, export_debug_players_csv
+from teambuilder.load_data import parse_players_csv, parse_coaches_csv
+from teambuilder.scoring import build_normalization_context, calculate_player_skill_score
+from teambuilder.team_builder import seed_teams_with_coaches, assign_players_to_teams
+from teambuilder.output import export_team_assignments, export_team_summary, export_debug_players_csv
 
 
 def parse_args():

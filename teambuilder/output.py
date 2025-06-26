@@ -8,7 +8,7 @@ See /docs/spec.md for full specification.
 """
 import csv
 from typing import List
-from .models import Team, Player
+from teambuilder.models import Team, Player
 import statistics
 
 def export_team_assignments(teams: List[Team], filename: str = "team_assignments.csv"):

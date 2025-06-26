@@ -7,7 +7,7 @@ Enforces balanced team sizes such that no team exceeds another by more than one 
 See /docs/spec.md for full specification.
 """
 from typing import List, Dict
-from .models import Player, Coach, Team
+from teambuilder.models import Player, Coach, Team
 import random
 
 def seed_teams_with_coaches(head_coaches: List[Coach], assistant_coaches: List[Coach]) -> List[Team]:

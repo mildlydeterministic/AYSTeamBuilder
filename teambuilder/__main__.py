@@ -4,7 +4,7 @@ Delegates to CLI handler.
 
 See /docs/spec.md for full specification.
 """
-from .cli import main
+from teambuilder.cli import main
 
 if __name__ == "__main__":
     main()
