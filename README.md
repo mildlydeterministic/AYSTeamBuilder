@@ -1,5 +1,4 @@
-# AYSTeamBuilder
-A helper for building balanced youth soccer teams.
+# Team Builder
 
 ## 🧾 Overview
 
@@ -17,13 +16,16 @@ You can run Team Builder on macOS or Windows using standalone executables built 
 ## ⚙️ Team Building Method
 
 1. **Input CSV files** of players and coaches are loaded.
-2. Each team is initialized with a coach pair (head and assistant).
-3. Each coach contributes either their child or a randomly assigned player.
-4. Remaining players are sorted by skill and distributed to the lowest-score team that:
+2. Players are parsed first to build the complete player pool.
+3. Coaches are parsed and separated into head and assistant coach pools.
+4. Reciprocated coach pairs are identified and used to create teams.
+5. Remaining unpaired head coaches are matched with available assistant coaches, prioritizing pairings where one coach has an associated player.
+6. Each team is seeded with one player per coach (if any); otherwise filled with random unassigned players.
+7. Remaining players are sorted by skill and distributed to the lowest-score team that:
    - Has an available slot
    - Does not already have a sponsored player (if the player is sponsored)
-   - Does not exceed the size of the smallest team by more than 1
-5. Final results are exported to CSV with a team summary and skill statistics.
+   - Does not exceed the size of the smallest team by more than one player
+8. Final results are exported to CSV with a team summary and standard deviation of team scores.
 
 ---
 
@@ -31,10 +33,9 @@ You can run Team Builder on macOS or Windows using standalone executables built 
 
 You can download the latest executable for your platform from the GitHub Actions **Artifacts** section:
 
-1. Go to the GitHub repo: `https://github.com/YOUR_USERNAME/YOUR_REPO_NAME`
-2. Click the **Actions** tab
-3. Select the latest **Build Executables** workflow run (triggered by a push to `main`)
-4. Download the appropriate artifact:
+1. Click the **Actions** tab in this repository
+2. Select the latest **Build Executables** workflow run (triggered by a push to `main`)
+3. Download the appropriate artifact:
    - `team_builder_windows` → `team_builder.exe`
    - `team_builder_macos` → `team_builder`
 
@@ -65,13 +66,24 @@ This will create `team_assignments.csv` in the current working directory and pri
 
 ## 📦 Input Expectations
 
-**players.csv** must contain columns:
+**players.csv** must contain the following columns:
 
-- `player_id`, `dob`, `experience`, `uniform_size`, `coach_eval`, `sponsor_id`
+- `PlayerID`: unique ID for the player
+- `Player Name`: full name (first and last)
+- `Date Of Birth`: MM/DD/YYYY format (used to compute age to 1 decimal place, half-up rounded)
+- `Years of Experience`: integer; column may be suffixed (e.g., `:(18643797)`), use the first matching prefix
+- `Uniform Size Selection`: text size label; column may be suffixed, use the first matching prefix
+- `Player Evaluation Ranking`: numeric or string evaluation score (format unknown)
+- `sponsor_id`: optional column for sponsor tracking
 
-**coaches.csv** must contain columns:
+**coaches.csv** must contain the following columns:
 
-- `coach_id`, `coach_name`, `coach_role`, `associated_player_id`, `assistant_coach_id`
+- `VolunteerID`: unique ID for the coach
+- `VolunteerTypeID`: an identifier for the type of volunteer
+- `Team Personnel Name`: full name (first and last)
+- `Team Personnel Role`: either "Head Coach" or "Assistant Coach" (ignore other roles)
+- `associatedPlayers`: will contain the PlayerID if applicable, or a value like "No Answer" if not provided
+- `Coach Pair`: coach ID of a linked coach for pairing (both coaches must list each other to be considered paired)
 
 Header names are hardcoded for now but can be updated in future versions.
 
@@ -79,10 +91,10 @@ Header names are hardcoded for now but can be updated in future versions.
 
 ## 📤 Output
 
-- `team_assignments.csv`: player-to-team assignments with optional skill and sponsor info
+- `team_assignments.csv`: player and coach team assignments. Usable for input into SportsConnect.
 - Console output includes:
-  - Standard deviation of team scores
-  - Summary of each team: name, player count, total score, sponsor (if present)
+  - Standard deviation of team skill scores
+  - Summary of each team: name, number of players, total score, and sponsor (if present)
 
 ---
 
