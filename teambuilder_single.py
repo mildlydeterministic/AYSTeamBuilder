@@ -23,7 +23,7 @@ class Player:
     dob: str
     experience: int
     uniform_size: str
-    evaluation_score: str
+    evaluation_score: int
     age: Optional[float] = None
     skill_score: Optional[float] = None
     sponsor_id: Optional[str] = None
@@ -87,7 +87,7 @@ def parse_players_csv_reader(reader) -> Dict[str, Player]:
         dob = row.get("Date Of Birth") or ""
         experience = row.get(experience_header) or None
         uniform_size = row.get(uniform_size_header) or "Youth M"
-        evaluation_score = row.get("Player Evaluation Ranking")
+        evaluation_score = row.get("Player Evaluation Rating")
         sponsor_id = row.get("sponsor_id") or None
         age = compute_age_from_dob(dob)
         try:
@@ -307,7 +307,7 @@ def export_team_assignments(teams: List[Team], filename: str = "team_assignments
     with open(filename, mode="w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow([
-            "TeamName", "VolunteerID", "VolunteerTypeID", "Team Personnel Name", "Team Personnel Role", "PlayerID", "Player Name", "Skill Score"
+            "TeamName", "VolunteerID", "VolunteerTypeID", "Team Personnel Name", "Team Personnel Role", "PlayerID", "Player Name", 
         ])
         for team in teams:
             for coach in [team.head_coach] + ([team.assistant_coach] if team.assistant_coach else []):
@@ -317,7 +317,6 @@ def export_team_assignments(teams: List[Team], filename: str = "team_assignments
                     coach.volunteer_type_id,
                     coach.full_name,
                     coach.role,
-                    "",
                     "",
                     ""
                 ])
@@ -330,7 +329,6 @@ def export_team_assignments(teams: List[Team], filename: str = "team_assignments
                     "",
                     player.player_id,
                     player.name,
-                    player.skill_score if hasattr(player, 'skill_score') else ""
                 ])
 
 def export_team_summary(teams: List[Team], filename: str = "team_summary.csv"):
@@ -377,7 +375,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Assign balanced youth soccer teams.")
     parser.add_argument("--players", required=True, help="Path to players.csv")
     parser.add_argument("--coaches", required=True, help="Path to coaches.csv")
-    parser.add_argument("--team-size", type=int, required=True, help="Target team size")
+    parser.add_argument("--team-size", type=int, help="Target team size")
     parser.add_argument("--debug", action="store_true", help="Output debug CSV of all players with skill scores")
     return parser.parse_args()
 
