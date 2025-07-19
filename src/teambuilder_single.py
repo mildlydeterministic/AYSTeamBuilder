@@ -257,14 +257,14 @@ def seed_teams_with_coaches(head_coaches: List[Coach], assistant_coaches: List[C
     for head in unpaired_heads:
         assistant = None
         if available_assistants:
-            if not head.associated_player_id:
+            if not head.associated_player_ids:
                 for i, a in enumerate(available_assistants):
-                    if a.associated_player_id:
+                    if a.associated_player_ids:
                         assistant = available_assistants.pop(i)
                         break
-            if not assistant and head.associated_player_id:
+            if not assistant and head.associated_player_ids:
                 for i, a in enumerate(available_assistants):
-                    if not a.associated_player_id:
+                    if not a.associated_player_ids:
                         assistant = available_assistants.pop(i)
                         break
             if not assistant:
@@ -371,28 +371,28 @@ def export_team_assignments(teams: List[Team], filename: str = "team_assignments
     with open(filename, mode="w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow([
-            "TeamName", "VolunteerID", "VolunteerTypeID", "Team Personnel Name", "Team Personnel Role", "PlayerID", "Player Name", 
+            "TeamName", "PlayerID", "VolunteerID", "VolunteerTypeID", "Player Name", "Team Personnel Name", "Team Personnel Role"
         ])
         for team in teams:
             for coach in [team.head_coach] + ([team.assistant_coach] if team.assistant_coach else []):
                 writer.writerow([
                     team.name,
+                    "",
                     coach.coach_id,
                     coach.volunteer_type_id,
-                    coach.full_name,
-                    coach.role,
                     "",
-                    ""
+                    coach.full_name,
+                    coach.role
                 ])
             for player in team.players:
                 writer.writerow([
                     team.name,
-                    "",
-                    "",
-                    "",
-                    "",
                     player.player_id,
+                    "",
+                    "",
                     player.name,
+                    "",
+                    ""
                 ])
 
 def export_team_summary(teams: List[Team], filename: str = "team_summary.csv"):
