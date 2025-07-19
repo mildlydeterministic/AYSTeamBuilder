@@ -37,7 +37,7 @@ class Coach:
     full_name: str
     role: str
     volunteer_type_id: str
-    associated_player_id: Optional[str] = None
+    associated_player_ids: Optional[List[str]] = field(default_factory=list)
     pair_id: Optional[str] = None
 
 @dataclass
@@ -145,16 +145,17 @@ def parse_coaches_csv_reader(reader) -> Tuple[List[Coach], List[Coach]]:
         coach_id = row.get("VolunteerID") or ""
         full_name = row.get("Team Personnel Name") or ""
         role = row.get("Team Personnel Role") or ""
-        associated_player_id = row.get("associatedPlayers") or row.get("associated_player_id")
-        if associated_player_id and associated_player_id.lower().startswith("no answer"):
-            associated_player_id = None
+        associated_players_field = row.get("associatedPlayers") or row.get("associated_player_id")
+        associated_player_ids = []
+        if associated_players_field and not associated_players_field.lower().startswith("no answer"):
+            associated_player_ids = [pid.strip() for pid in associated_players_field.split("|") if pid.strip()]
         pair_id = row.get("Coach Pair") or None
         volunteer_type_id = row.get("VolunteerTypeId") or ""
         coach = Coach(
             coach_id=coach_id,
             full_name=full_name,
             role=role,
-            associated_player_id=associated_player_id if associated_player_id else None,
+            associated_player_ids=associated_player_ids,
             pair_id=pair_id,
             volunteer_type_id=volunteer_type_id
         )
@@ -290,11 +291,12 @@ def add_player_to_team(player: Player, team: Team):
 def assign_coach_associated_players(teams: List[Team], players: Dict[str, Player], assigned: set) -> None:
     for team in teams:
         for coach in [team.head_coach, team.assistant_coach]:
-            if coach and coach.associated_player_id:
-                player = players.get(coach.associated_player_id)
-                if player and player.player_id not in assigned:
-                    add_player_to_team(player, team)
-                    assigned.add(player.player_id)
+            if coach and coach.associated_player_ids:
+                for pid in coach.associated_player_ids:
+                    player = players.get(pid)
+                    if player and player.player_id not in assigned:
+                        add_player_to_team(player, team)
+                        assigned.add(player.player_id)
 
 def fill_teams_to_minimum(teams: List[Team], unassigned: List[Player], max_team_size: int) -> None:
     for team in teams:
