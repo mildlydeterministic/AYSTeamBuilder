@@ -315,7 +315,16 @@ def assign_remaining_players_by_skill(teams: List[Team], unassigned: List[Player
 
 def find_best_team_for_player(player: Player, teams: List[Team]) -> Team:
     # Assign to team with lowest total_score, then fewest players, then random
-    best = min(teams, key=lambda t: (t.total_score, len(t.players), random.random()))
+    player_first_name = player.name.split()[0] if player.name else ""
+    eligible_teams = []
+    for t in teams:
+        # Check for duplicate first name
+        if any(p.name.split()[0] == player_first_name for p in t.players):
+            continue
+        eligible_teams.append(t)
+    # If all teams have a duplicate, fall back to original logic
+    candidate_teams = eligible_teams if eligible_teams else teams
+    best = min(candidate_teams, key=lambda t: (t.total_score, len(t.players), random.random()))
     return best
 
 def assign_sibling_groups_to_teams(teams: List[Team], players: Dict[str, Player], assigned: set):

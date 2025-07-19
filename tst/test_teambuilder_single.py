@@ -124,6 +124,35 @@ class TestTeamBuilderSingle(unittest.TestCase):
         self.assertEqual(team.sponsor_id, "S123")
         self.assertEqual(team.total_score, 0.75)
 
+    def test_no_duplicate_first_names_on_team(self):
+        # Create two teams
+        teams = [
+            tb.Team(team_id="T1", name="Team1", head_coach=None),
+            tb.Team(team_id="T2", name="Team2", head_coach=None)
+        ]
+        # Create players with duplicate first names. With 2 teams, Alex Smith and Jamie Lee will be the first two assigned. 
+        # Alex Johnson should be on the team with Alex Smith by stats, but should be assigned to the other team to avoid name duplication
+        players = {
+            "1": tb.Player(player_id="1", name="Alex Smith", dob="01/01/2010", experience=1, uniform_size="Youth M", evaluation_score=300),
+            "2": tb.Player(player_id="2", name="Jamie Lee", dob="01/01/2010", experience=1, uniform_size="Youth M", evaluation_score=600),
+            "3": tb.Player(player_id="3", name="Alex Johnson", dob="01/01/2010", experience=1, uniform_size="Youth M", evaluation_score=400)
+        }
+        # No siblings
+        for p in players.values():
+            p.siblings = []
+        assigned = set()
+        # Assign players one by one using find_best_team_for_player
+        for pid in players:
+            player = players[pid]
+            eligible_teams = [t for t in teams if len(t.players) < 3]
+            team = tb.find_best_team_for_player(player, eligible_teams)
+            tb.add_player_to_team(player, team)
+            assigned.add(pid)
+        # Check that no team has two players with the same first name
+        for team in teams:
+            first_names = [p.name.split()[0] for p in team.players]
+            self.assertEqual(len(first_names), len(set(first_names)))
+
 class TestSiblingGroupAssignmentHelper(unittest.TestCase):
     def setUp(self):
         # Create two teams
