@@ -296,17 +296,21 @@ def assign_coach_associated_players(teams: List[Team], players: Dict[str, Player
                     add_player_to_team(player, team)
                     assigned.add(player.player_id)
 
-def fill_teams_to_minimum(teams: List[Team], unassigned: List[Player]) -> None:
+def fill_teams_to_minimum(teams: List[Team], unassigned: List[Player], max_team_size: int) -> None:
     for team in teams:
-        while len(team.players) < MIN_TEAM_SIZE and unassigned:
+        while len(team.players) < MIN_TEAM_SIZE and len(team.players) < max_team_size and unassigned:
             idx = random.randint(0, len(unassigned) - 1)
             player = unassigned.pop(idx)
             add_player_to_team(player, team)
 
-def assign_remaining_players_by_skill(teams: List[Team], unassigned: List[Player]) -> None:
+def assign_remaining_players_by_skill(teams: List[Team], unassigned: List[Player], max_team_size: int) -> None:
     unassigned.sort(key=lambda p: getattr(p, 'skill_score', 0), reverse=True)
     for player in unassigned:
-        best_team = find_best_team_for_player(player, teams)
+        # Only assign to teams that have not reached max_team_size
+        eligible_teams = [t for t in teams if len(t.players) < max_team_size]
+        if not eligible_teams:
+            break
+        best_team = find_best_team_for_player(player, eligible_teams)
         add_player_to_team(player, best_team)
 
 def find_best_team_for_player(player: Player, teams: List[Team]) -> Team:
@@ -348,8 +352,8 @@ def assign_players_to_teams(teams: List[Team], players: Dict[str, Player], team_
     assign_sibling_groups_to_teams(teams, players, assigned)
     # Continue with normal assignment
     unassigned = [p for p in players.values() if p.player_id not in assigned]
-    fill_teams_to_minimum(teams, unassigned)
-    assign_remaining_players_by_skill(teams, unassigned)
+    fill_teams_to_minimum(teams, unassigned, max_team_size=team_size)
+    assign_remaining_players_by_skill(teams, unassigned, max_team_size=team_size)
 
 # --- output.py ---
 def export_team_assignments(teams: List[Team], filename: str = "team_assignments.csv"):

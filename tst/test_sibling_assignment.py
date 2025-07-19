@@ -1,7 +1,5 @@
 import unittest
 from src.teambuilder_single import Player, parse_players_csv_reader
-import io
-import csv
 
 class TestSiblingAssignment(unittest.TestCase):
     def setUp(self):
@@ -59,22 +57,8 @@ class TestSiblingAssignment(unittest.TestCase):
             }
         ]
 
-    def get_csv_reader(self):
-        # Convert self.rows to CSV string
-        fieldnames = [
-            "PlayerID", "Player Name", "Date Of Birth", "Years of Experience", "Uniform Size", "Player Evaluation Rating", "Parent LastName", "Account Street Address"
-        ]
-        output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=fieldnames)
-        writer.writeheader()
-        for row in self.rows:
-            writer.writerow(row)
-        output.seek(0)
-        return csv.DictReader(output)
-
     def test_sibling_detection(self):
-        reader = self.get_csv_reader()
-        players = parse_players_csv_reader(reader)
+        players = parse_players_csv_reader(self.rows)
         # Smith family: Alice and Bob
         self.assertEqual(set(players["1"].siblings), {"2"})
         self.assertEqual(set(players["2"].siblings), {"1"})
@@ -85,8 +69,7 @@ class TestSiblingAssignment(unittest.TestCase):
         self.assertEqual(players["3"].siblings, [])
 
     def test_no_false_positives(self):
-        reader = self.get_csv_reader()
-        players = parse_players_csv_reader(reader)
+        players = parse_players_csv_reader(self.rows)
         # Siblings only if both parent_name and street_address match
         self.assertNotIn("3", players["1"].siblings)
         self.assertNotIn("4", players["1"].siblings)
