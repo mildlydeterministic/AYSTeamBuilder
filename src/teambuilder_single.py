@@ -27,6 +27,9 @@ class Player:
     age: Optional[float] = None
     skill_score: Optional[float] = None
     sponsor_id: Optional[str] = None
+    parent_name: Optional[str] = None
+    street_address: Optional[str] = None
+    siblings: Optional[List[str]] = field(default_factory=list)
 
 @dataclass
 class Coach:
@@ -50,7 +53,7 @@ class Team:
 # --- load_data.py ---
 
 EVALUATION_SCORE_DEFAULT = 300
-MIN_TEAM_SIZE = 2
+MIN_TEAM_SIZE = 3
 
 def compute_age_from_dob(dob: str, ref_date: Optional[datetime.date] = None) -> float:
     if not dob:
@@ -89,6 +92,8 @@ def parse_players_csv_reader(reader) -> Dict[str, Player]:
         uniform_size = row.get(uniform_size_header) or "Youth M"
         evaluation_score = row.get("Player Evaluation Rating")
         sponsor_id = row.get("sponsor_id") or None
+        parent_name = row.get("Parent LastName") or None
+        street_address = row.get("Account Street Address") or None
         age = compute_age_from_dob(dob)
         try:
             experience = int(experience) if experience is not None else 0
@@ -110,8 +115,22 @@ def parse_players_csv_reader(reader) -> Dict[str, Player]:
             uniform_size=uniform_size,
             age=age,
             evaluation_score=evaluation_score,
-            sponsor_id=sponsor_id
+            sponsor_id=sponsor_id,
+            parent_name=parent_name,
+            street_address=street_address
         )
+    # Identify siblings: players with same parent_name and street_address
+    family_groups = {}
+    for p in players.values():
+        key = (p.parent_name, p.street_address)
+        if key not in family_groups:
+            family_groups[key] = []
+        family_groups[key].append(p.player_id)
+
+    for p in players.values():
+        key = (p.parent_name, p.street_address)
+        # Siblings are all other player_ids in the same family group
+        p.siblings = [pid for pid in family_groups[key] if pid != p.player_id]
     return players
 
 def parse_coaches_csv(filepath: str) -> Tuple[List[Coach], List[Coach]]:
@@ -130,7 +149,7 @@ def parse_coaches_csv_reader(reader) -> Tuple[List[Coach], List[Coach]]:
         if associated_player_id and associated_player_id.lower().startswith("no answer"):
             associated_player_id = None
         pair_id = row.get("Coach Pair") or None
-        volunteer_type_id = row.get("VolunteerTypeID") or ""
+        volunteer_type_id = row.get("VolunteerTypeId") or ""
         coach = Coach(
             coach_id=coach_id,
             full_name=full_name,
@@ -295,9 +314,39 @@ def find_best_team_for_player(player: Player, teams: List[Team]) -> Team:
     best = min(teams, key=lambda t: (t.total_score, len(t.players), random.random()))
     return best
 
+def assign_sibling_groups_to_teams(teams: List[Team], players: Dict[str, Player], assigned: set):
+    """
+    Assign sibling groups to teams, ensuring all siblings are placed together.
+    Updates the assigned set with player_ids that have been assigned.
+    """
+    # Identify family groups (siblings)
+    family_groups = {}
+    for p in players.values():
+        key = (p.parent_name, p.street_address)
+        if p.siblings:
+            if key not in family_groups:
+                family_groups[key] = set()
+            family_groups[key].add(p.player_id)
+
+    # Remove duplicate and single-member groups
+    sibling_groups = [list(group) for group in family_groups.values() if len(group) > 1]
+
+    # Assign sibling groups to teams first
+    for group in sibling_groups:
+        group_players = [players[pid] for pid in group if pid not in assigned]
+        if not group_players:
+            continue
+        # Find best team for the whole group
+        best_team = find_best_team_for_player(group_players[0], teams)
+        for player in group_players:
+            add_player_to_team(player, best_team)
+            assigned.add(player.player_id)
+
 def assign_players_to_teams(teams: List[Team], players: Dict[str, Player], team_size: int):
     assigned = set()
     assign_coach_associated_players(teams, players, assigned)
+    assign_sibling_groups_to_teams(teams, players, assigned)
+    # Continue with normal assignment
     unassigned = [p for p in players.values() if p.player_id not in assigned]
     fill_teams_to_minimum(teams, unassigned)
     assign_remaining_players_by_skill(teams, unassigned)
