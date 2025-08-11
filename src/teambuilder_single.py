@@ -457,6 +457,22 @@ def main():
     for player in player_pool.values():
         player.skill_score = calculate_player_skill_score(player, normalization_context)
     assign_players_to_teams(teams, player_pool, args.team_size)
+
+    # Ensure the smallest team is within 1 player of the largest team.
+    # For now, brute force it by checking sizes and if necessary, throw it all out and try again
+    max_team_size = max(len(team.players) for team in teams)
+    min_team_size = min(len(team.players) for team in teams)
+    iter_count = 1
+    while (max_team_size - min_team_size) > 1:
+        teams = seed_teams_with_coaches(head_coaches, assistant_coaches)
+        assign_players_to_teams(teams, player_pool, args.team_size)
+        max_team_size = max(len(team.players) for team in teams)
+        min_team_size = min(len(team.players) for team in teams)
+        iter_count += 1
+        if iter_count > 100:
+            print("Warning: Maximum iterations reached while balancing teams. Results may not be optimal.")
+            break
+    print(f"Teams balanced after {iter_count} iterations. Max team size: {max_team_size}, Min team size: {min_team_size}")
     
     export_team_assignments(teams)
     export_team_summary(teams)
